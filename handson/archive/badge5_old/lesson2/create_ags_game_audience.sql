@@ -1,0 +1,1 @@
+-- This file has been renamed to: 01_create_database_and_schema.sql

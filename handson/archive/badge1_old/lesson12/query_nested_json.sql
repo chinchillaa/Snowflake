@@ -1,0 +1,8 @@
+select raw_nested_book
+from LIBRARY_CARD_CATALOG.PUBLIC.NESTED_INGEST_JSON;
+
+select raw_nested_book:year_published
+from LIBRARY_CARD_CATALOG.PUBLIC.NESTED_INGEST_JSON;
+
+select raw_nested_book:authors
+from LIBRARY_CARD_CATALOG.PUBLIC.NESTED_INGEST_JSON;

@@ -1,0 +1,1 @@
+-- This file has been renamed to: 04_merge_into_logs_enhanced.sql

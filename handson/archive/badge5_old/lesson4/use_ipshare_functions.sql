@@ -1,0 +1,1 @@
+-- This file has been renamed to: 04_create_logs_enhanced_table.sql

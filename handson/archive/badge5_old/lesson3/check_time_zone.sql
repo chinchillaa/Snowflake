@@ -1,0 +1,1 @@
+-- This file has been renamed to: 02_alter_session_timezone.sql

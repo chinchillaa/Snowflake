@@ -1,0 +1,2 @@
+create table ags_game_audience.enhanced.logs_enhanced_BU
+clone ags_game_audience.enhanced.logs_enhanced;

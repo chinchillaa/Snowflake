@@ -1,0 +1,1 @@
+-- This file has been renamed to: 06_search_kishore_login.sql

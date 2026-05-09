@@ -1,0 +1,1 @@
+-- This file has been renamed to: 06_count_gamers_in_enhanced.sql

@@ -1,0 +1,1 @@
+-- This file has been renamed to: 02_join_logs_with_geolocation.sql

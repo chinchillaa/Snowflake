@@ -1,0 +1,1 @@
+-- This file has been renamed to: 01_create_pl_game_logs_table.sql

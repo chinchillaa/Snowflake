@@ -1,0 +1,1 @@
+-- This file has been renamed to: 02_list_stage_files.sql

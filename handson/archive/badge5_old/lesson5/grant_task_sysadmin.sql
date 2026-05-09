@@ -1,0 +1,1 @@
+-- This file has been renamed to: 02_grant_execute_task_sysadmin.sql

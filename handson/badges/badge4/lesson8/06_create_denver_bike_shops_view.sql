@@ -1,0 +1,6 @@
+use role sysadmin;
+
+create or replace view MELS_SMOOTHIE_CHALLENGE_DB.LOCATIONS.denver_bike_shops as
+select *, MELS_SMOOTHIE_CHALLENGE_DB.LOCATIONS.DISTANCE_TO_MC(coordinates) as DISTANCE_TO_MELANIES
+from OPENSTREETMAP_DENVER.DENVER.V_OSM_DEN_SHOP_OUTDOORS_AND_SPORT_VEHICLES
+where shop = 'bicycle';

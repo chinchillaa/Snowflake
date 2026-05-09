@@ -1,0 +1,1 @@
+-- This file has been renamed to: 01_select_current_timestamp.sql

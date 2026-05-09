@@ -1,0 +1,1 @@
+-- This file has been renamed to: 03_truncate_logs_enhanced.sql

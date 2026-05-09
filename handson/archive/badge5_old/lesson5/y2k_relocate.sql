@@ -1,0 +1,1 @@
+-- This file has been renamed to: 07_truncate_and_reload_enhanced.sql

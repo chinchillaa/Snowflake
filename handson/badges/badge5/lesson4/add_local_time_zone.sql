@@ -1,0 +1,1 @@
+-- This file was empty and has been superseded. See 04_create_logs_enhanced_table.sql
