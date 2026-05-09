@@ -176,6 +176,26 @@ body::after {
   line-height: 1.6;
 }
 
+.level-pill {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin: 0.65rem 0 0;
+  padding: 0.28rem 0.55rem;
+  border: 1px solid rgba(255, 179, 64, 0.32);
+  border-radius: 999px;
+  background: rgba(255, 179, 64, 0.10);
+  color: #ffd08a;
+  font-family: var(--display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.hero-level {
+  margin: 0 0 0.45rem;
+}
+
 /* ─── SHARED KICKER / EYEBROW ────────────────────────────── */
 .eyebrow,
 .panel-kicker {

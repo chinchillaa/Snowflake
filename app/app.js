@@ -22,8 +22,8 @@
     });
   }
 
-  const bank = window.SNOWPRO_SUMMARY_BANK;
-  const storageKey = "snowpro-atlas-notes-v1";
+  const bank = window.SNOWFLAKE_ATLAS_BANK;
+  const storageKey = "snowflake-atlas-v1";
   const articlesBySlug = Object.fromEntries(bank.articles.map((a) => [a.slug, a]));
   const urlParams = new URLSearchParams(window.location.search);
   const initialArticleSlug = urlParams.get("article");
@@ -80,6 +80,16 @@
 
   function getArticleProgress(slug) {
     return state.progress[slug] || { completed: false, bookmarked: false, note: "" };
+  }
+
+  function getArticleMetadata(article) {
+    const classification = [
+      article.track ? `Track: ${article.track}` : "",
+      article.level ? `Level: ${article.level}` : "",
+      article.depth ? `Depth: ${article.depth}` : "",
+      article.contentType ? `Type: ${article.contentType}` : "",
+    ].filter(Boolean);
+    return [...classification, ...article.metadata.filter((item) => !item.startsWith("レベル:"))];
   }
 
   /* ── helpers ─────────────────────────────────────────── */
@@ -146,7 +156,8 @@
         : progress.bookmarked
         ? "ブックマーク"
         : "未学習";
-      button.innerHTML = `<h3>${article.title}</h3><p>${stateLabel}</p>`;
+      const classification = [article.level, article.depth, article.contentType].filter(Boolean).join(" / ");
+      button.innerHTML = `<h3>${article.title}</h3><p>${classification || stateLabel}</p><p>${stateLabel}</p>`;
 
       button.addEventListener("click", () => {
         state.currentArticleSlug = article.slug;
@@ -181,7 +192,7 @@
       `ソース: ${article.fileName}`,
       `見出し数: ${article.sections.length}`,
       progress.completed ? "状態: 学習済み ✓" : "状態: 未学習",
-      ...article.metadata,
+      ...getArticleMetadata(article),
     ];
     els.metaPanel.innerHTML = items.map((item) => `<div class="meta-pill">${item}</div>`).join("");
   }
@@ -1800,7 +1811,7 @@
   function renderArticle(article) {
     const currentIndex = bank.articles.findIndex((a) => a.slug === article.slug);
     els.currentArticleTitle.textContent = article.title;
-    els.currentArticleMeta.textContent  = article.metadata.join(" / ");
+    els.currentArticleMeta.textContent  = getArticleMetadata(article).join(" / ");
     els.articlePosition.textContent     = `${currentIndex + 1} / ${bank.articleCount}`;
     els.articleHeading.textContent      = article.title;
     els.articleContent.innerHTML        = article.html;
