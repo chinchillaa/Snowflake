@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SnowPro Atlas Notes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell" id="app-shell">
+
+      <button class="sidebar-toggle" id="sidebar-toggle" type="button" aria-label="サイドバーを開閉">
+        <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
+          <rect y="2.5" width="17" height="2" rx="1" fill="currentColor" />
+          <rect y="7.5" width="17" height="2" rx="1" fill="currentColor" />
+          <rect y="12.5" width="17" height="2" rx="1" fill="currentColor" />
+        </svg>
+      </button>
+
+      <aside class="left-rail">
+        <div class="brand-block">
+          <p class="eyebrow">SnowPro Associate</p>
+          <h1>Atlas<br />Notes</h1>
+          <p class="brand-copy">まとめノートを章ごとにたどり、理解済み・気になる論点・関連章をつなげる学習ビュー。</p>
+        </div>
+
+        <section class="panel panel-stack">
+          <div class="panel-head">
+            <p class="panel-kicker">Overview</p>
+            <h2>進捗</h2>
+          </div>
+          <div class="metric-grid">
+            <article>
+              <span>学習済み章</span>
+              <strong id="completed-count">0</strong>
+            </article>
+            <article>
+              <span>ブックマーク</span>
+              <strong id="bookmark-count">0</strong>
+            </article>
+            <article>
+              <span>総章数</span>
+              <strong id="article-count">0</strong>
+            </article>
+            <article>
+              <span>現在位置</span>
+              <strong id="section-position">0/0</strong>
+            </article>
+          </div>
+        </section>
+
+        <section class="panel panel-stack">
+          <div class="panel-head">
+            <p class="panel-kicker">Collections</p>
+            <h2>章一覧</h2>
+          </div>
+          <div class="article-list" id="article-list"></div>
+        </section>
+
+        <section class="panel panel-stack">
+          <div class="panel-head">
+            <p class="panel-kicker">Section Map</p>
+            <h2>見出し</h2>
+          </div>
+          <div class="section-list" id="section-list"></div>
+        </section>
+      </aside>
+
+      <main class="main-stage">
+        <section class="hero panel">
+          <div class="hero-copy">
+            <p class="eyebrow">Interactive Summary Deck</p>
+            <h2 id="current-article-title">読み込み中...</h2>
+            <p id="current-article-meta" class="hero-meta"></p>
+          </div>
+          <div class="hero-actions">
+            <label class="search-box">
+              <span>検索</span>
+              <input id="search-input" type="search" placeholder="章名・本文キーワード検索" />
+            </label>
+            <div class="link-cluster">
+              <a class="ghost-link" href="../quiz_app/index.html">問題演習へ →</a>
+              <button class="ghost-button" id="reset-progress-button" type="button">進捗をリセット</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="content-layout">
+          <article class="panel article-panel">
+            <header class="article-header">
+              <div class="article-header-left">
+                <p class="eyebrow" id="article-position">Article</p>
+                <h3 id="article-heading">読み込み中...</h3>
+              </div>
+              <div class="article-header-actions">
+                <button class="complete-button" id="toggle-complete-button" type="button">学習済みにする</button>
+                <button class="bookmark-button" id="toggle-bookmark-button" type="button">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M2.5 2h9v10.5L7 9.5l-4.5 3V2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+                  </svg>
+                  <span>Bookmark</span>
+                </button>
+                <span class="status-badge" id="status-badge">未学習</span>
+              </div>
+            </header>
+
+            <div class="q-progress-bar">
+              <div class="q-progress-fill" id="q-progress-fill" style="width: 0%"></div>
+            </div>
+
+            <div class="article-content prose" id="article-content"></div>
+
+            <div class="article-actions">
+              <div class="nav-buttons">
+                <button class="nav-button" id="prev-article-button" type="button">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M9 2.5L4.5 7 9 11.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  前の章
+                </button>
+                <button class="nav-button" id="next-article-button" type="button">
+                  次の章
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M5 2.5L9.5 7 5 11.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="shortcut-strip" aria-hidden="true">
+              <kbd>←</kbd><kbd>→</kbd> 章移動 &nbsp;·&nbsp;
+              <kbd>C</kbd> 学習済みトグル &nbsp;·&nbsp;
+              <kbd>B</kbd> ブックマーク
+            </div>
+          </article>
+
+          <aside class="panel insight-panel">
+            <div class="panel-head">
+              <p class="panel-kicker">Insight</p>
+              <h2>メモと関連</h2>
+            </div>
+            <div class="mini-block">
+              <div class="section-label">学習メモ</div>
+              <textarea id="user-note" rows="8" placeholder="曖昧な点、試験で引っかかりそうな論点、後で問題演習したいテーマ"></textarea>
+            </div>
+            <div class="mini-block">
+              <div class="section-label">関連アプリ</div>
+              <div class="related-links">
+                <a class="related-link" href="../quiz_app/index.html">確認問題アプリで演習</a>
+                <a class="related-link" id="current-anchor-link" href="#top">この章の先頭へ</a>
+              </div>
+            </div>
+            <div class="mini-block">
+              <div class="section-label">章メタ情報</div>
+              <div id="article-meta-panel" class="meta-panel"></div>
+            </div>
+          </aside>
+        </section>
+      </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script src="./notes-data.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
