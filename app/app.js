@@ -25,12 +25,33 @@
   const bank = window.SNOWFLAKE_ATLAS_BANK;
   const storageKey = "snowflake-atlas-v1";
   const articlesBySlug = Object.fromEntries(bank.articles.map((a) => [a.slug, a]));
+
+  // sections・searchText が無い記事（手動追加など）はHTMLから自動生成する
+  bank.articles.forEach((article) => {
+    if (article.sections && article.searchText) return;
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(article.html || "", "text/html");
+    if (!article.sections) {
+      article.sections = [];
+      doc.querySelectorAll("h2[id], h3[id]").forEach((el) => {
+        article.sections.push({
+          id: el.id,
+          level: parseInt(el.tagName.slice(1), 10),
+          title: el.textContent.trim(),
+        });
+      });
+    }
+    if (!article.searchText) {
+      article.searchText = (doc.body.textContent || "").replace(/\s+/g, " ").trim();
+    }
+  });
   const urlParams = new URLSearchParams(window.location.search);
   const initialArticleSlug = urlParams.get("article");
   const initialSectionId = urlParams.get("section");
 
   const state = {
     search: "",
+    levelFilter: "all",
     currentArticleSlug: articlesBySlug[initialArticleSlug] ? initialArticleSlug : bank.articles[0]?.slug || "",
     currentSectionId: initialSectionId || "",
     progress: loadProgress(),
@@ -45,7 +66,6 @@
     sectionList:          document.getElementById("section-list"),
     searchInput:          document.getElementById("search-input"),
     currentArticleTitle:  document.getElementById("current-article-title"),
-    currentArticleMeta:   document.getElementById("current-article-meta"),
     completedCount:       document.getElementById("completed-count"),
     bookmarkCount:        document.getElementById("bookmark-count"),
     articleCount:         document.getElementById("article-count"),
@@ -59,7 +79,7 @@
     toggleBookmarkButton: document.getElementById("toggle-bookmark-button"),
     prevArticleButton:    document.getElementById("prev-article-button"),
     nextArticleButton:    document.getElementById("next-article-button"),
-    metaPanel:            document.getElementById("article-meta-panel"),
+    filterTabs:           document.getElementById("filter-tabs"),
     currentAnchorLink:    document.getElementById("current-anchor-link"),
     resetProgressButton:  document.getElementById("reset-progress-button"),
     progressFill:         document.getElementById("q-progress-fill"),
@@ -95,9 +115,10 @@
   /* ── helpers ─────────────────────────────────────────── */
   function getVisibleArticles() {
     const term = state.search.trim().toLowerCase();
-    return bank.articles.filter(
-      (a) => !term || a.title.toLowerCase().includes(term) || a.searchText.toLowerCase().includes(term)
-    );
+    return bank.articles.filter((a) => {
+      if (state.levelFilter !== "all" && a.level !== state.levelFilter) return false;
+      return !term || a.title.toLowerCase().includes(term) || (a.searchText || "").toLowerCase().includes(term);
+    });
   }
 
   function getCurrentArticle() {
@@ -140,6 +161,25 @@
     els.progressFill.style.width = `${pct}%`;
   }
 
+  /* ── render: filter tabs ─────────────────────────────── */
+  function renderFilterTabs() {
+    if (!els.filterTabs) return;
+    const levels = ["all", ...new Set(bank.articles.map((a) => a.level).filter(Boolean))];
+    const labels = { all: "すべて" };
+    els.filterTabs.innerHTML = levels.map((lv) => {
+      const label = labels[lv] || lv;
+      const active = state.levelFilter === lv ? " is-active" : "";
+      return `<button class="filter-tab lv-${lv}${active}" data-level="${lv}">${label}</button>`;
+    }).join("");
+    els.filterTabs.querySelectorAll(".filter-tab").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        state.levelFilter = btn.dataset.level;
+        ensureCurrentArticle();
+        render();
+      });
+    });
+  }
+
   /* ── render: article list ────────────────────────────── */
   function renderArticleList() {
     const visibleSlugs = new Set(getVisibleArticles().map((a) => a.slug));
@@ -151,13 +191,17 @@
       button.className = `article-card${article.slug === state.currentArticleSlug ? " is-active" : ""}`;
       if (!visibleSlugs.has(article.slug)) button.hidden = true;
 
-      const stateLabel = progress.completed
-        ? "学習済み"
-        : progress.bookmarked
-        ? "ブックマーク"
-        : "未学習";
-      const classification = [article.level, article.depth, article.contentType].filter(Boolean).join(" / ");
-      button.innerHTML = `<h3>${article.title}</h3><p>${classification || stateLabel}</p><p>${stateLabel}</p>`;
+      const stateLabel = progress.completed ? "学習済み ✓" : progress.bookmarked ? "★ ブックマーク" : "未学習";
+      const levelTag = article.level
+        ? `<span class="article-level-tag lv-${article.level}">${article.level}</span>`
+        : "";
+      button.innerHTML = `
+        <div class="article-card-head">
+          <h3>${article.title}</h3>
+          ${levelTag}
+        </div>
+        <p class="article-state-label">${stateLabel}</p>
+      `;
 
       button.addEventListener("click", () => {
         state.currentArticleSlug = article.slug;
@@ -185,17 +229,6 @@
     }
   }
 
-  /* ── render: meta panel ──────────────────────────────── */
-  function renderMeta(article) {
-    const progress = getArticleProgress(article.slug);
-    const items = [
-      `ソース: ${article.fileName}`,
-      `見出し数: ${article.sections.length}`,
-      progress.completed ? "状態: 学習済み ✓" : "状態: 未学習",
-      ...getArticleMetadata(article),
-    ];
-    els.metaPanel.innerHTML = items.map((item) => `<div class="meta-pill">${item}</div>`).join("");
-  }
 
   /* ── render: status & action buttons ────────────────── */
   function renderStatus(article) {
@@ -1811,14 +1844,12 @@
   function renderArticle(article) {
     const currentIndex = bank.articles.findIndex((a) => a.slug === article.slug);
     els.currentArticleTitle.textContent = article.title;
-    els.currentArticleMeta.textContent  = getArticleMetadata(article).join(" / ");
     els.articlePosition.textContent     = `${currentIndex + 1} / ${bank.articleCount}`;
     els.articleHeading.textContent      = article.title;
     els.articleContent.innerHTML        = article.html;
     renderDiagramBlocks();
     classifyBlockquotes();
     els.userNote.value                  = getArticleProgress(article.slug).note || "";
-    renderMeta(article);
     renderStatus(article);
     bindInlineArticleLinks();
     setupScrollSpy(article);
@@ -1892,6 +1923,7 @@
   function render() {
     ensureCurrentArticle();
     const article = getCurrentArticle();
+    renderFilterTabs();
     renderArticleList();
     renderSectionList(article);
     renderArticle(article);
