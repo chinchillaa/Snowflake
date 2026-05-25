@@ -1,0 +1,15 @@
+# クローンした外部リポジトリ（clone 元: https://github.com/dbt-labs/jaffle-shop）
+dbt-tutorial/jaffle-shop/
+
+# DuckDB データファイル（バイナリ・実行時生成）
+*.duckdb
+
+# 実行ログ
+logs/
+
+# Python 仮想環境
+.venv/
+
+# dbt 実行時生成物
+target/
+dbt_packages/
