@@ -1,0 +1,66 @@
+version: 2
+
+models:
+  - name: stg_orders
+    description: "注文ヘッダーの staging モデル"
+    columns:
+      - name: order_id
+        description: "注文ID（主キー）"
+        tests:
+          - not_null
+          - unique
+      - name: customer_id
+        description: "顧客ID（外部キー）"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_customers')
+              field: customer_id
+      - name: order_status
+        description: "注文ステータス（F=完了, O=未処理, P=一部処理）"
+        tests:
+          - accepted_values:
+              values: ['F', 'O', 'P']
+      - name: total_price
+        description: "注文合計金額"
+        tests:
+          - not_null
+
+  - name: stg_customers
+    description: "顧客マスターの staging モデル"
+    columns:
+      - name: customer_id
+        description: "顧客ID（主キー）"
+        tests:
+          - not_null
+          - unique
+      - name: market_segment
+        description: "市場セグメント"
+        tests:
+          - accepted_values:
+              values: ['AUTOMOBILE', 'BUILDING', 'FURNITURE', 'HOUSEHOLD', 'MACHINERY']
+
+  - name: stg_nations
+    description: "国マスターの staging モデル"
+    columns:
+      - name: nation_id
+        description: "国ID（主キー）"
+        tests:
+          - not_null
+          - unique
+
+  - name: stg_line_items
+    description: "注文明細の staging モデル"
+    columns:
+      - name: order_id
+        description: "注文ID"
+        tests:
+          - not_null
+      - name: line_number
+        description: "明細行番号"
+        tests:
+          - not_null
+      - name: quantity
+        description: "数量"
+        tests:
+          - not_null

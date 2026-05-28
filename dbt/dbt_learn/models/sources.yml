@@ -1,0 +1,18 @@
+version: 2
+
+sources:
+  - name: tpch
+    database: SNOWFLAKE_SAMPLE_DATA
+    schema: TPCH_SF1
+    description: "TPC-H ベンチマークデータ（SF=1）"
+    tables:
+      - name: orders
+        description: "注文ヘッダー"
+      - name: customer
+        description: "顧客マスター"
+      - name: lineitem
+        description: "注文明細"
+      - name: nation
+        description: "国マスター"
+      - name: region
+        description: "地域マスター"

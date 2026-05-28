@@ -1,0 +1,2 @@
+-- このビューに NULL の order_id が紛れ込んでいたら？
+SELECT COUNT(*) FROM DBT_LEARN.ANALYTICS.V_ORDERS_MANUAL WHERE order_id IS NULL;

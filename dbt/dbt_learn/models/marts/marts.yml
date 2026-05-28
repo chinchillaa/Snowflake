@@ -1,0 +1,41 @@
+version: 2
+
+models:
+  - name: fct_orders
+    description: "注文ファクトテーブル。顧客・国情報を結合済み"
+    columns:
+      - name: order_id
+        description: "注文ID"
+        tests:
+          - not_null
+          - unique
+      - name: total_price
+        description: "注文合計金額"
+        tests:
+          - not_null
+
+  - name: dim_customers
+    description: "顧客ディメンション。生涯価値・注文回数を含む"
+    columns:
+      - name: customer_id
+        description: "顧客ID"
+        tests:
+          - not_null
+          - unique
+      - name: lifetime_value
+        description: "顧客の累計注文金額"
+
+  - name: agg_daily_orders
+    description: "日次注文サマリー。国・セグメント別の集計"
+
+  - name: fct_line_items
+    description: "注文明細ファクト。net_price 計算済み"
+    columns:
+      - name: order_id
+        description: "注文ID"
+        tests:
+          - not_null
+      - name: line_number
+        description: "明細行番号"
+        tests:
+          - not_null

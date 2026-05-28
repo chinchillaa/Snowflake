@@ -1,0 +1,12 @@
+dbt_learn:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: ""
+      user: ""
+      role: SYSADMIN
+      database: DBT_LEARN
+      warehouse: COMPUTE_WH
+      schema: ANALYTICS
+      threads: 4
