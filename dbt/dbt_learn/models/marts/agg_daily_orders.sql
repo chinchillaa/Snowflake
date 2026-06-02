@@ -1,3 +1,4 @@
+{# {{ config(materialized='view') }} #}  -- view vs table の実行時間の違い検証
 SELECT
     o.order_date,
     n.nation_name,

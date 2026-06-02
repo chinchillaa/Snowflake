@@ -7,8 +7,10 @@ models:
       - name: order_id
         description: "注文ID（主キー）"
         tests:
-          - not_null
+          - not_null  # where order_id is nullで検証
           - unique
+          # - accepted_values:  # わざと追加（order_id は数値なので必ず FAIL）
+          #     values: ['DUMMY']
       - name: customer_id
         description: "顧客ID（外部キー）"
         tests:
@@ -21,6 +23,7 @@ models:
         tests:
           - accepted_values:
               values: ['F', 'O', 'P']
+              # values: ['F', 'O']    # 'P' を消す実験         
       - name: total_price
         description: "注文合計金額"
         tests:
