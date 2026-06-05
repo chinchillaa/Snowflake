@@ -1,7 +1,7 @@
 SELECT
     c_custkey AS customer_id,
-    c_name AS customer_name,
+    {{ clean_string('c_name') }} AS customer_name,
     c_nationkey AS nation_id,
     c_acctbal AS account_balance,
-    c_mktsegment AS market_segment
+    {{ clean_string('c_mktsegment') }} AS market_segment
 FROM {{ source('tpch', 'customer') }}

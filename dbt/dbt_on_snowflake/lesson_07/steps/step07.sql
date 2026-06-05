@@ -1,0 +1,1 @@
+execute task dbt_learn.dbt_projects.daily_dbt_build;

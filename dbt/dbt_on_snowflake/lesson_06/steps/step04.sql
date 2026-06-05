@@ -1,0 +1,1 @@
+select * from dbt_learn.analytics.order_status_pivot limit 5;

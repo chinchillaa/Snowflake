@@ -1,0 +1,1 @@
+select count(*) from dbt_learn.analytics.recent_orders;
