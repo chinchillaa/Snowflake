@@ -32,8 +32,10 @@
 | 5 | [テストでデータ品質を守る](lesson_05/lesson_05_tests_and_docs.md) | 25分 | テスト追加 → 故意に壊す → FAIL 体験 → build の挙動確認 |
 | 6 | [Jinja とマクロ](lesson_06/lesson_06_jinja_and_macros.md) | 30分 | var/if/for を compile で確認 + マクロ自作 |
 | 7 | [デプロイして本番運用する](lesson_07/lesson_07_deploy_and_schedule.md) | 20分 | CREATE/EXECUTE DBT PROJECT + TASK スケジューリング |
+| 8 | [Snapshot と パッケージ活用](lesson_08/lesson_08_snapshots_and_packages.md) | 35分 | SCD Type 2 で変更履歴追跡 + dbt_utils 導入 |
+| 9 | [hooks・tags・セレクタで運用効率化](lesson_09/lesson_09_hooks_tags_selectors.md) | 30分 | pre/post-hook + tags + セレクタ構文で柔軟な実行制御 |
 
-**合計**: 約 2.5 時間
+**合計**: 約 3.5 時間
 
 ---
 

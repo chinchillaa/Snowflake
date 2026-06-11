@@ -1,3 +1,10 @@
+{{
+    config(
+        materialized='table',
+        post_hook="GRANT SELECT ON {{this}} TO ROLE PUBLIC"
+    )
+}}
+
 SELECT
     c.customer_id,
     c.customer_name,

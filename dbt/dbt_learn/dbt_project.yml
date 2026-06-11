@@ -16,5 +16,14 @@ models:
   dbt_learn:
     staging:
       +materialized: view
+      +tags: ["staging", "daily"]
     marts:
       +materialized: table
+      +tags: ["marts", "daily"]
+
+on-run-start:
+  - "INSERT INTO DBT_LEARN.ANALYTICS.DBT_RUN_LOG (model_name, run_type) VALUES ('__PROJECT_START__', 'project_run')"
+on-run-end:
+  - "GRANT SELECT ON ALL TABLES IN SCHEMA DBT_LEARN.ANALYTICS TO ROLE PUBLIC"
+  - "GRANT SELECT ON ALL VIEWS IN SCHEMA DBT_LEARN.ANALYTICS TO ROLE PUBLIC"
+  - "INSERT INTO DBT_LEARN.ANALYTICS.DBT_RUN_LOG (model_name, run_type) VALUES ('__PROJECT_END__', 'project_run')"

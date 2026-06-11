@@ -1,4 +1,11 @@
 {# {{ config(materialized='view') }} #}  -- view vs table の実行時間の違い検証
+{{
+    config(
+        materialized='table',
+        tags=['reporting', 'hourly'],
+        pre_hook="INSERT INTO DBT_LEARN.ANALYTICS.DBT_RUN_LOG (model_name) VALUES ('agg_daily_orders')"
+    )
+}}
 SELECT
     o.order_date,
     n.nation_name,

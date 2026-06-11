@@ -1,0 +1,3 @@
+SELECT * FROM DBT_LEARN.ANALYTICS.DBT_RUN_LOG
+-- WHERE run_type = 'project_run'
+ORDER BY started_at DESC LIMIT 5;

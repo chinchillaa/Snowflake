@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS DBT_LEARN.ANALYTICS.DBT_RUN_LOG (
+    model_name   VARCHAR,
+    started_at   TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP(),
+    run_type     VARCHAR DEFAULT 'model_run'
+);
