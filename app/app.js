@@ -16,7 +16,7 @@
         clusterBkg:          "#0a1525",
         clusterBorder:       "#3a9fff",
         titleColor:          "#8fd3ff",
-        fontFamily:          "'Plus Jakarta Sans', 'Noto Sans JP', system-ui, sans-serif",
+        fontFamily:          "'Zen Kaku Gothic New', 'Hiragino Kaku Gothic ProN', system-ui, sans-serif",
         fontSize:            "14px",
       },
     });
@@ -253,7 +253,7 @@
     /* bookmark button */
     els.toggleBookmarkButton.classList.toggle("is-active", progress.bookmarked);
     const bookmarkSpan = els.toggleBookmarkButton.querySelector("span");
-    if (bookmarkSpan) bookmarkSpan.textContent = progress.bookmarked ? "Bookmarked" : "Bookmark";
+    if (bookmarkSpan) bookmarkSpan.textContent = progress.bookmarked ? "ブックマーク中" : "ブックマーク";
   }
 
   /* ── scroll spy ──────────────────────────────────────── */
@@ -1909,6 +1909,16 @@
     els.prevArticleButton.addEventListener("click", () => moveArticle(-1));
     els.nextArticleButton.addEventListener("click", () => moveArticle(1));
     els.resetProgressButton.addEventListener("click", resetProgress);
+
+    // メニュー外クリックで閉じる
+    const menuDetails = document.getElementById("menu-details");
+    if (menuDetails) {
+      document.addEventListener("click", (event) => {
+        if (menuDetails.open && !menuDetails.contains(event.target)) {
+          menuDetails.open = false;
+        }
+      });
+    }
 
     window.addEventListener("keydown", (event) => {
       if (event.target && ["INPUT", "TEXTAREA"].includes(event.target.tagName)) return;
