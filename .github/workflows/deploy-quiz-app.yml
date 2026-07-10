@@ -1,10 +1,13 @@
-name: Deploy quiz_app to GitHub Pages
+name: Deploy study apps to GitHub Pages
 
 on:
   push:
     branches: ["main"]
     paths:
       - "SnowPro_Core/quiz_app/**"
+      - "SnowPro_Associate/quiz_app/**"
+      - "app/**"
+      - ".github/pages/**"
       - ".github/workflows/deploy-quiz-app.yml"
   workflow_dispatch:
 
@@ -27,13 +30,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Assemble site
+        run: |
+          mkdir -p _site/SnowPro_Core _site/SnowPro_Associate
+          cp .github/pages/index.html _site/index.html
+          cp -r app _site/app
+          cp -r SnowPro_Core/quiz_app _site/SnowPro_Core/quiz_app
+          cp -r SnowPro_Associate/quiz_app _site/SnowPro_Associate/quiz_app
+          find _site -name "*.bak" -delete
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "SnowPro_Core/quiz_app"
+          path: "_site"
 
       - name: Deploy to GitHub Pages
         id: deployment
