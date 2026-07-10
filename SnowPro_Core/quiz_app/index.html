@@ -3,210 +3,192 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SnowPro Core Signal Studio</title>
+    <title>SnowPro Core 演習帳</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <div class="app-shell" id="app-shell">
 
-      <button class="sidebar-toggle" id="sidebar-toggle" type="button" aria-label="サイドバーを開閉">
-        <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
-          <rect y="2.5" width="17" height="2" rx="1" fill="currentColor"/>
-          <rect y="7.5" width="17" height="2" rx="1" fill="currentColor"/>
-          <rect y="12.5" width="17" height="2" rx="1" fill="currentColor"/>
-        </svg>
-      </button>
-
-      <aside class="left-rail" id="left-rail">
-        <div class="brand-block">
-          <p class="eyebrow">SnowPro Core</p>
-          <h1>Signal<br>Studio</h1>
-          <p class="brand-copy">問題を解くだけでなく、迷い方と復習点まで残すブラウザ学習デッキ。</p>
-          <div class="brand-links">
-            <a class="ghost-link" href="../summary_app/index.html">まとめノートへ</a>
-          </div>
+    <header class="top-bar">
+      <div class="top-bar-inner">
+        <div class="brand">
+          <span class="brand-eyebrow">SnowPro Core</span>
+          <span class="brand-name">演習帳</span>
         </div>
 
-        <section class="panel panel-stack" id="overview-panel">
-          <div class="panel-head">
-            <p class="panel-kicker">Overview</p>
-            <h2>進捗</h2>
+        <dl class="stat-strip">
+          <div class="stat">
+            <dt>回答済み</dt>
+            <dd id="answered-count">0</dd>
           </div>
-          <div class="metric-grid">
-            <article>
-              <span>回答済み</span>
-              <strong id="answered-count">0</strong>
-            </article>
-            <article>
-              <span>正答率</span>
-              <strong id="accuracy-rate">0%</strong>
-            </article>
-            <article>
-              <span>ブックマーク</span>
-              <strong id="bookmark-count">0</strong>
-            </article>
-            <article>
-              <span>総問題数</span>
-              <strong id="question-count">0</strong>
-            </article>
+          <div class="stat">
+            <dt>正答率</dt>
+            <dd id="accuracy-rate">0%</dd>
           </div>
-        </section>
+          <div class="stat">
+            <dt>ブックマーク</dt>
+            <dd id="bookmark-count">0</dd>
+          </div>
+          <div class="stat">
+            <dt>全問</dt>
+            <dd id="question-count">0</dd>
+          </div>
+        </dl>
 
-        <section class="panel panel-stack">
-          <div class="panel-head">
-            <p class="panel-kicker">Collections</p>
-            <h2>試験セット</h2>
+        <details class="menu" id="menu-details">
+          <summary aria-label="メニュー">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+              <circle cx="3" cy="8" r="1.5"/><circle cx="8" cy="8" r="1.5"/><circle cx="13" cy="8" r="1.5"/>
+            </svg>
+          </summary>
+          <div class="menu-panel">
+            <a class="menu-item" href="../summary_app/index.html">まとめノートへ</a>
+            <hr />
+            <button class="menu-item" id="export-progress-button" type="button">進捗をエクスポート</button>
+            <button class="menu-item" id="import-progress-button" type="button">進捗をインポート</button>
+            <input class="file-input-hidden" id="import-progress-file" type="file" accept="application/json,.json" />
+            <hr />
+            <button class="menu-item is-danger" id="reset-progress-button" type="button">このセットの進捗をリセット</button>
           </div>
-          <div class="exam-list" id="exam-list"></div>
-        </section>
+        </details>
+      </div>
+      <div class="exam-progress" aria-hidden="true"><div id="q-progress-fill"></div></div>
+    </header>
 
-        <section class="panel panel-stack">
-          <div class="panel-head">
-            <p class="panel-kicker">Quick Filters</p>
-            <h2>絞り込み</h2>
-          </div>
+    <div class="page">
+
+      <section class="control-deck">
+        <nav class="exam-tabs" id="exam-tabs" aria-label="試験セット"></nav>
+
+        <div class="toolbar">
           <div class="filter-list" id="filter-list"></div>
-        </section>
-      </aside>
+          <label class="search-box">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+              <circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.4"/>
+              <path d="M8.7 8.7L12 12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+            <input id="search-input" type="search" placeholder="キーワードで検索" />
+          </label>
+        </div>
 
-      <main class="main-stage">
-        <section class="hero panel">
-          <div class="hero-copy">
-            <p class="eyebrow">Interactive Revision Deck</p>
-            <h2 id="current-exam-title">読み込み中...</h2>
-            <p id="current-exam-meta" class="hero-meta"></p>
-          </div>
-          <div class="hero-actions">
-            <label class="search-box">
-              <span>検索</span>
-              <input id="search-input" type="search" placeholder="問題名・キーワード検索" />
-            </label>
-            <div class="hero-action-stack">
-              <a class="ghost-link" href="../summary_app/index.html">まとめノートへ</a>
-              <button class="ghost-button" id="export-progress-button" type="button">進捗をエクスポート</button>
-              <button class="ghost-button" id="import-progress-button" type="button">進捗をインポート</button>
-              <input class="file-input-hidden" id="import-progress-file" type="file" accept="application/json,.json" />
-              <button class="ghost-button" id="reset-progress-button" type="button">進捗をリセット</button>
+        <div class="question-map" id="question-map"></div>
+        <div class="map-legend" aria-hidden="true">
+          <span class="lg lg-correct">正解</span>
+          <span class="lg lg-wrong">要復習</span>
+          <span class="lg lg-bookmark">ブックマーク</span>
+          <span class="lg lg-current">表示中</span>
+        </div>
+      </section>
+
+      <main class="desk">
+
+        <article class="sheet question-sheet" id="question-sheet">
+          <span class="sheet-side-label" aria-hidden="true">SnowPro Core 演習帳</span>
+
+          <header class="q-head">
+            <div class="q-number">
+              <span class="q-mark">問</span>
+              <span class="q-index" id="question-position">–</span>
+              <span class="q-total" id="question-total">/ –</span>
             </div>
-          </div>
-        </section>
-
-        <section class="panel question-nav-panel">
-          <div class="panel-head">
-            <p class="panel-kicker">Question Map</p>
-            <h2>ナビゲーション</h2>
-          </div>
-          <div class="question-map" id="question-map"></div>
-        </section>
-
-        <section class="question-layout">
-          <article class="panel question-panel">
-            <header class="question-header">
-              <div>
-                <p class="eyebrow" id="question-position">Question</p>
-                <h3 id="question-title">読み込み中...</h3>
-              </div>
-              <div class="question-header-actions">
-                <button class="bookmark-button" id="bookmark-button" type="button">
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <path d="M2.5 2h9v10.5L7 9.5l-4.5 3V2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
-                  </svg>
-                  <span>Bookmark</span>
-                </button>
-                <span class="select-mode" id="select-mode-badge">単一選択</span>
-              </div>
-            </header>
-
-            <div class="q-progress-bar">
-              <div class="q-progress-fill" id="q-progress-fill" style="width: 0%"></div>
-            </div>
-
-            <div class="question-stem prose" id="question-stem"></div>
-            <div class="options-grid" id="options-grid"></div>
-
-            <div class="workspace-grid">
-              <label class="workspace-card">
-                <span class="workspace-label">
-                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-                    <rect x="1" y="1" width="11" height="11" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
-                    <path d="M3.5 4.5h6M3.5 6.5h6M3.5 8.5h4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
-                  </svg>
-                  学習メモ
-                </span>
-                <textarea id="user-note" rows="4" placeholder="なぜその選択肢にしたか、ひっかけに見えた点、あとで見返したい論点"></textarea>
-              </label>
-
-              <div class="workspace-card origin-card">
-                <span class="workspace-label">
-                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-                    <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.2"/>
-                    <path d="M6.5 4.5v3.5M6.5 9.5v.3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                  </svg>
-                  元ノートの回答メモ
-                </span>
-                <div id="source-answer" class="source-answer"></div>
-              </div>
-            </div>
-
-            <div class="question-actions">
-              <button class="primary-button" id="check-answer-button" type="button">
-                採点する
-                <kbd class="action-kbd">↵</kbd>
+            <div class="q-flags">
+              <span class="mode-badge" id="select-mode-badge">単一選択</span>
+              <button class="bookmark-button" id="bookmark-button" type="button">
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <path d="M2.5 2h9v10.5L7 9.5l-4.5 3V2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+                </svg>
+                <span>ブックマーク</span>
               </button>
-              <button class="ghost-button" id="toggle-explanation-button" type="button">解説を開く</button>
-              <div class="nav-buttons">
-                <button class="nav-button" id="prev-question-button" type="button">
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <path d="M9 2.5L4.5 7 9 11.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  前へ
-                </button>
-                <button class="nav-button" id="next-question-button" type="button">
-                  次へ
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <path d="M5 2.5L9.5 7 5 11.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </button>
+            </div>
+          </header>
+
+          <div class="question-stem prose" id="question-stem"></div>
+
+          <div class="options" id="options-list"></div>
+
+          <div class="q-actions">
+            <button class="primary-button" id="check-answer-button" type="button">
+              採点する <kbd>↵</kbd>
+            </button>
+            <button class="ghost-button" id="toggle-explanation-button" type="button">解説を開く</button>
+            <div class="nav-buttons">
+              <button class="nav-button" id="prev-question-button" type="button" aria-label="前の問題へ">
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <path d="M9 2.5L4.5 7 9 11.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                前へ
+              </button>
+              <button class="nav-button" id="next-question-button" type="button" aria-label="次の問題へ">
+                次へ
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <path d="M5 2.5L9.5 7 5 11.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <section class="sheet review-sheet" id="review-sheet" hidden>
+          <div class="verdict-row">
+            <div class="stamp" id="result-stamp">未採点</div>
+            <dl class="verdict-lines">
+              <div>
+                <dt>あなたの選択</dt>
+                <dd id="selected-answer-text">未選択</dd>
               </div>
-            </div>
+              <div>
+                <dt>正解</dt>
+                <dd id="correct-answer-text">–</dd>
+              </div>
+            </dl>
+          </div>
 
-            <div class="shortcut-strip" aria-hidden="true">
-              <kbd>A</kbd>–<kbd>E</kbd> 選択 &nbsp;·&nbsp;
-              <kbd>↵</kbd> 採点 &nbsp;·&nbsp;
-              <kbd>Space</kbd> 解説 &nbsp;·&nbsp;
-              <kbd>←</kbd><kbd>→</kbd> 移動
-            </div>
-          </article>
+          <section class="review-block">
+            <h2 class="review-heading">解説</h2>
+            <div class="prose" id="explanation-content"></div>
+          </section>
 
-          <aside class="panel insight-panel">
-            <div class="panel-head">
-              <p class="panel-kicker">Insight</p>
-              <h2>判定と復習</h2>
-            </div>
-            <div class="result-chip" id="result-chip">未採点</div>
-            <div class="answer-line">
-              <span>あなたの選択</span>
-              <strong id="selected-answer-text">未選択</strong>
-            </div>
-            <div class="answer-line">
-              <span>正解</span>
-              <strong id="correct-answer-text">-</strong>
-            </div>
-            <div class="explanation-wrap">
-              <div class="section-label">解説</div>
-              <div id="explanation-content" class="prose explanation-content"></div>
-            </div>
-            <div class="practice-wrap" id="practice-wrap">
-              <div class="section-label">実際に確認してみよう</div>
-              <div id="practice-content" class="prose"></div>
-            </div>
-          </aside>
+          <section class="review-block" id="practice-wrap" hidden>
+            <h2 class="review-heading">実際に確認してみよう</h2>
+            <div class="prose" id="practice-content"></div>
+          </section>
         </section>
+
+        <section class="desk-grid">
+          <label class="sheet note-card">
+            <span class="card-label">
+              <svg width="12" height="12" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+                <rect x="1" y="1" width="11" height="11" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+                <path d="M3.5 4.5h6M3.5 6.5h6M3.5 8.5h4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+              </svg>
+              学習メモ
+            </span>
+            <textarea id="user-note" rows="5" placeholder="なぜその選択肢にしたか、ひっかけに見えた点、あとで見返したい論点"></textarea>
+          </label>
+
+          <div class="sheet note-card">
+            <span class="card-label">
+              <svg width="12" height="12" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+                <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.2"/>
+                <path d="M6.5 4.5v3.5M6.5 9.5v.3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+              元ノートの回答メモ
+            </span>
+            <div class="source-answer" id="source-answer"></div>
+          </div>
+        </section>
+
       </main>
+
+      <footer class="shortcut-bar" aria-hidden="true">
+        <span><kbd>A</kbd>–<kbd>E</kbd> 選択</span>
+        <span><kbd>↵</kbd> 採点</span>
+        <span><kbd>Space</kbd> 解説</span>
+        <span><kbd>←</kbd><kbd>→</kbd> 移動</span>
+      </footer>
     </div>
 
     <script src="./questions-data.js"></script>

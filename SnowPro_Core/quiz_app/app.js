@@ -1,6 +1,6 @@
 (function () {
   const bank = window.SNOWPRO_QUESTION_BANK;
-  const storageKey = "snowpro-core-signal-studio-v1";
+  const storageKey = "snowpro-core-signal-studio-v1"; // 既存の進捗を引き継ぐため変更しない
 
   const state = {
     selectedExam: bank.exams[0]?.slug || "",
@@ -12,24 +12,24 @@
     draftSelection: [],
   };
 
+  let lastRenderedQuestionId = "";
+  let reviewWasVisible = false;
+
   const els = {
-    appShell:                document.getElementById("app-shell"),
-    sidebarToggle:           document.getElementById("sidebar-toggle"),
-    examList:                document.getElementById("exam-list"),
+    examTabs:                document.getElementById("exam-tabs"),
     filterList:              document.getElementById("filter-list"),
     questionMap:             document.getElementById("question-map"),
     searchInput:             document.getElementById("search-input"),
-    currentExamTitle:        document.getElementById("current-exam-title"),
-    currentExamMeta:         document.getElementById("current-exam-meta"),
     answeredCount:           document.getElementById("answered-count"),
     accuracyRate:            document.getElementById("accuracy-rate"),
     bookmarkCount:           document.getElementById("bookmark-count"),
     questionCount:           document.getElementById("question-count"),
+    questionSheet:           document.getElementById("question-sheet"),
     questionPosition:        document.getElementById("question-position"),
-    questionTitle:           document.getElementById("question-title"),
+    questionTotal:           document.getElementById("question-total"),
     selectModeBadge:         document.getElementById("select-mode-badge"),
     questionStem:            document.getElementById("question-stem"),
-    optionsGrid:             document.getElementById("options-grid"),
+    optionsList:             document.getElementById("options-list"),
     userNote:                document.getElementById("user-note"),
     sourceAnswer:            document.getElementById("source-answer"),
     bookmarkButton:          document.getElementById("bookmark-button"),
@@ -37,7 +37,8 @@
     toggleExplanationButton: document.getElementById("toggle-explanation-button"),
     prevQuestionButton:      document.getElementById("prev-question-button"),
     nextQuestionButton:      document.getElementById("next-question-button"),
-    resultChip:              document.getElementById("result-chip"),
+    reviewSheet:             document.getElementById("review-sheet"),
+    resultStamp:             document.getElementById("result-stamp"),
     selectedAnswerText:      document.getElementById("selected-answer-text"),
     correctAnswerText:       document.getElementById("correct-answer-text"),
     explanationContent:      document.getElementById("explanation-content"),
@@ -48,13 +49,14 @@
     importProgressFile:      document.getElementById("import-progress-file"),
     resetProgressButton:     document.getElementById("reset-progress-button"),
     progressFill:            document.getElementById("q-progress-fill"),
+    menuDetails:             document.getElementById("menu-details"),
   };
 
   const filters = [
-    { id: "all",        label: "All"      },
-    { id: "unanswered", label: "未回答"   },
-    { id: "incorrect",  label: "要復習"   },
-    { id: "bookmarked", label: "Bookmark" },
+    { id: "all",        label: "すべて"       },
+    { id: "unanswered", label: "未回答"       },
+    { id: "incorrect",  label: "要復習"       },
+    { id: "bookmarked", label: "ブックマーク" },
   ];
 
   const examsBySlug = Object.fromEntries(bank.exams.map((exam) => [exam.slug, exam]));
@@ -99,18 +101,13 @@
 
   function exportProgress() {
     const payload = {
-      app: "SnowPro Core Signal Studio",
+      app: "SnowPro Core 演習帳",
       version: 1,
       exportedAt: new Date().toISOString(),
       storageKey,
       progress: state.progress,
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-    if (window.navigator.msSaveOrOpenBlob) {
-      window.navigator.msSaveOrOpenBlob(blob, "snowpro-core-progress.json");
-      return;
-    }
-
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
@@ -161,6 +158,10 @@
     return examsBySlug[state.selectedExam];
   }
 
+  function examShortTitle(exam) {
+    return exam.title.replace(/^SnowPro Core\s*/i, "");
+  }
+
   function getQuestionProgress(id) {
     return state.progress[id] || { selected: [], note: "", bookmarked: false, checked: false, correct: null };
   }
@@ -204,15 +205,15 @@
   /* ── stats ───────────────────────────────────────────── */
   function updateStats() {
     const items = Object.entries(state.progress).filter(([id]) => id.startsWith(`${state.selectedExam}::`));
-    const answered  = items.filter(([, item]) => item.checked).length;
-    const correct   = items.filter(([, item]) => item.correct).length;
+    const answered   = items.filter(([, item]) => item.checked).length;
+    const correct    = items.filter(([, item]) => item.correct).length;
     const bookmarked = items.filter(([, item]) => item.bookmarked).length;
     const exam = getExam();
 
-    els.answeredCount.textContent  = String(answered);
-    els.accuracyRate.textContent   = answered ? `${Math.round((correct / answered) * 100)}%` : "0%";
-    els.bookmarkCount.textContent  = String(bookmarked);
-    els.questionCount.textContent  = String(exam.questionCount);
+    els.answeredCount.textContent = String(answered);
+    els.accuracyRate.textContent  = answered ? `${Math.round((correct / answered) * 100)}%` : "0%";
+    els.bookmarkCount.textContent = String(bookmarked);
+    els.questionCount.textContent = String(exam.questionCount);
   }
 
   /* ── progress bar ────────────────────────────────────── */
@@ -221,25 +222,24 @@
     const exam = getExam();
     const total = exam.questionCount;
     if (total === 0) return;
-    const allQuestions = exam.questions;
-    const currentIndex = allQuestions.findIndex(
+    const currentIndex = exam.questions.findIndex(
       (q) => questionId(exam.slug, q.order) === state.currentQuestionId
     );
     const pct = currentIndex >= 0 ? ((currentIndex + 1) / total) * 100 : 0;
     els.progressFill.style.width = `${pct}%`;
   }
 
-  /* ── render: exam list ───────────────────────────────── */
-  function renderExamList() {
-    els.examList.innerHTML = "";
+  /* ── render: exam tabs ───────────────────────────────── */
+  function renderExamTabs() {
+    els.examTabs.innerHTML = "";
     for (const exam of bank.exams) {
       const button = document.createElement("button");
       button.type = "button";
-      button.className = `exam-card${exam.slug === state.selectedExam ? " is-active" : ""}`;
+      button.className = `exam-tab${exam.slug === state.selectedExam ? " is-active" : ""}`;
       const answered = exam.questions.filter(
         (q) => getQuestionProgress(questionId(exam.slug, q.order)).checked
       ).length;
-      button.innerHTML = `<h3>${exam.title}</h3><p>${exam.questionCount}問 / 回答済み ${answered}問</p>`;
+      button.innerHTML = `${examShortTitle(exam)}<small>${answered} / ${exam.questionCount} 問</small>`;
       button.addEventListener("click", () => {
         state.selectedExam = exam.slug;
         state.filter = "all";
@@ -249,7 +249,7 @@
         ensureCurrentQuestion();
         render();
       });
-      els.examList.appendChild(button);
+      els.examTabs.appendChild(button);
     }
   }
 
@@ -281,10 +281,10 @@
       const button = document.createElement("button");
       button.type = "button";
       button.className = "question-dot";
-      if (id === state.currentQuestionId)                button.classList.add("is-current");
+      if (id === state.currentQuestionId)                 button.classList.add("is-current");
       if (progress.checked && progress.correct === true)  button.classList.add("is-correct");
       if (progress.checked && progress.correct === false) button.classList.add("is-incorrect");
-      if (progress.bookmarked)                             button.classList.add("is-bookmarked");
+      if (progress.bookmarked)                            button.classList.add("is-bookmarked");
       if (!visibleIds.has(id)) button.style.opacity = "0.28";
       button.textContent = question.order;
       button.addEventListener("click", () => {
@@ -300,24 +300,24 @@
   function renderSourceAnswer(question) {
     const source = question.sourceAnswer;
     const lines = [];
-    if (source.selected.length)           lines.push(`元の選択: ${source.selected.join(", ")}`);
-    if (source.memo)                       lines.push(`元メモ:\n${source.memo}`);
-    if (source.originalCorrect === true)   lines.push("元ノート判定: 正解できた");
-    if (source.originalCorrect === false)  lines.push("元ノート判定: 間違えた");
-    if (source.reviewPoint)                lines.push(`復習ポイント: ${source.reviewPoint}`);
+    if (source.selected.length)          lines.push(`元の選択: ${source.selected.join(", ")}`);
+    if (source.memo)                      lines.push(`元メモ:\n${source.memo}`);
+    if (source.originalCorrect === true)  lines.push("元ノート判定: 正解できた");
+    if (source.originalCorrect === false) lines.push("元ノート判定: 間違えた");
+    if (source.reviewPoint)               lines.push(`復習ポイント: ${source.reviewPoint}`);
     els.sourceAnswer.textContent = lines.length ? lines.join("\n\n") : "元ノートの回答メモは未記入です。";
   }
 
   /* ── render: options ─────────────────────────────────── */
   function renderOptions(question, progress) {
-    els.optionsGrid.innerHTML = "";
+    els.optionsList.innerHTML = "";
     for (const option of question.options) {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "option-card";
       const isSelected = state.draftSelection.includes(option.key);
-      if (isSelected)                                                             button.classList.add("is-selected");
-      if (progress.checked && question.correctAnswers.includes(option.key))      button.classList.add("is-correct");
+      if (isSelected) button.classList.add("is-selected");
+      if (progress.checked && question.correctAnswers.includes(option.key)) button.classList.add("is-correct");
       if (progress.checked && isSelected && !question.correctAnswers.includes(option.key)) button.classList.add("is-wrong");
       button.innerHTML = `
         <span class="badge">${option.key}</span>
@@ -334,41 +334,50 @@
         persistDraft(question);
         render();
       });
-      els.optionsGrid.appendChild(button);
+      els.optionsList.appendChild(button);
     }
   }
 
-  /* ── render: result / insight ────────────────────────── */
-  function renderResult(question, progress) {
-    els.correctAnswerText.textContent  = (progress.checked || state.revealed)
-      ? question.correctAnswers.join(", ")
-      : "採点後に表示";
+  /* ── render: review sheet ────────────────────────────── */
+  function renderReview(question, progress) {
+    const show = progress.checked || state.revealed;
+
+    // 非表示→表示に変わった時だけ入場アニメーションを付ける
+    if (show && !reviewWasVisible) {
+      els.reviewSheet.classList.remove("rv-enter");
+      void els.reviewSheet.offsetWidth;
+      els.reviewSheet.classList.add("rv-enter");
+    }
+    reviewWasVisible = show;
+    els.reviewSheet.hidden = !show;
+
+    els.toggleExplanationButton.textContent = show ? "解説を閉じる" : "解説を開く";
+    els.checkAnswerButton.disabled = state.draftSelection.length === 0;
+
+    if (!show) return;
+
     els.selectedAnswerText.textContent = progress.selected.length ? progress.selected.join(", ") : "未選択";
-    els.explanationContent.innerHTML   = state.revealed || progress.checked
-      ? question.explanationHtml
-      : "<p>採点後に解説を表示できます。</p>";
+    els.correctAnswerText.textContent  = question.correctAnswers.join(", ");
+    els.explanationContent.innerHTML   = question.explanationHtml;
 
     if (question.practiceHtml) {
-      els.practiceWrap.hidden     = !(state.revealed || progress.checked);
+      els.practiceWrap.hidden = false;
       els.practiceContent.innerHTML = question.practiceHtml;
     } else {
-      els.practiceWrap.hidden     = true;
+      els.practiceWrap.hidden = true;
       els.practiceContent.innerHTML = "";
     }
 
-    els.resultChip.className = "result-chip";
+    els.resultStamp.className = "stamp";
     if (!progress.checked) {
-      els.resultChip.classList.add("state-idle");
-      els.resultChip.textContent = "未採点";
+      els.resultStamp.textContent = "未採点";
     } else if (progress.correct) {
-      els.resultChip.classList.add("state-correct");
-      els.resultChip.textContent = "✓ 正解";
+      els.resultStamp.classList.add("state-correct");
+      els.resultStamp.textContent = "正解";
     } else {
-      els.resultChip.classList.add("state-wrong");
-      els.resultChip.textContent = "✕ 要復習";
+      els.resultStamp.classList.add("state-wrong");
+      els.resultStamp.textContent = "要復習";
     }
-
-    els.toggleExplanationButton.textContent = state.revealed ? "解説を閉じる" : "解説を開く";
   }
 
   /* ── render: question ────────────────────────────────── */
@@ -378,11 +387,10 @@
     const progress = getQuestionProgress(id);
     state.draftSelection = [...progress.selected];
 
-    els.currentExamTitle.textContent = exam.title;
-    els.currentExamMeta.textContent  = exam.metadata.join(" / ");
-    els.questionPosition.textContent = `${question.order} / ${exam.questionCount}`;
-    els.questionTitle.textContent    = question.title;
+    els.questionPosition.textContent = String(question.order);
+    els.questionTotal.textContent    = `/ ${exam.questionCount}`;
     els.selectModeBadge.textContent  = question.multiSelect ? "複数選択" : "単一選択";
+    els.selectModeBadge.classList.toggle("is-multi", !!question.multiSelect);
     els.questionStem.innerHTML       = question.stemHtml;
     els.userNote.value               = progress.note || "";
 
@@ -390,10 +398,18 @@
 
     const bookmarkSpan = els.bookmarkButton.querySelector("span");
     els.bookmarkButton.classList.toggle("is-active", !!progress.bookmarked);
-    if (bookmarkSpan) bookmarkSpan.textContent = progress.bookmarked ? "Bookmarked" : "Bookmark";
+    if (bookmarkSpan) bookmarkSpan.textContent = progress.bookmarked ? "ブックマーク中" : "ブックマーク";
 
     renderOptions(question, progress);
-    renderResult(question, progress);
+    renderReview(question, progress);
+
+    // 問題が切り替わった時だけスタッガー表示を付ける
+    if (lastRenderedQuestionId !== id) {
+      els.questionSheet.classList.remove("q-enter");
+      void els.questionSheet.offsetWidth;
+      els.questionSheet.classList.add("q-enter");
+      lastRenderedQuestionId = id;
+    }
   }
 
   /* ── persist ─────────────────────────────────────────── */
@@ -424,6 +440,9 @@
     state.revealed = true;
     saveProgress();
     render();
+    requestAnimationFrame(() => {
+      els.reviewSheet.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
   }
 
   /* ── bookmark ────────────────────────────────────────── */
@@ -453,6 +472,7 @@
       state.currentQuestionId = questionId(getExam().slug, next.order);
       state.revealed = false;
       render();
+      els.questionSheet.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }
 
@@ -466,13 +486,6 @@
     saveProgress();
     state.revealed = false;
     render();
-  }
-
-  /* ── sidebar toggle ──────────────────────────────────── */
-  function bindSidebarToggle() {
-    els.sidebarToggle.addEventListener("click", () => {
-      els.appShell.classList.toggle("sidebar-collapsed");
-    });
   }
 
   /* ── event binding ───────────────────────────────────── */
@@ -490,7 +503,7 @@
       updateStats();
     });
 
-    els.checkAnswerButton.addEventListener("click",       checkAnswer);
+    els.checkAnswerButton.addEventListener("click", checkAnswer);
     els.toggleExplanationButton.addEventListener("click", () => {
       state.revealed = !state.revealed;
       render();
@@ -502,6 +515,13 @@
     els.importProgressButton.addEventListener("click", () => els.importProgressFile.click());
     els.importProgressFile.addEventListener("change", (e) => importProgressFile(e.target.files[0]));
     els.resetProgressButton.addEventListener("click", resetExamProgress);
+
+    // メニュー外クリックで閉じる
+    document.addEventListener("click", (e) => {
+      if (els.menuDetails.open && !els.menuDetails.contains(e.target)) {
+        els.menuDetails.open = false;
+      }
+    });
 
     window.addEventListener("keydown", (e) => {
       const question = getCurrentQuestion();
@@ -539,7 +559,7 @@
   function render() {
     ensureCurrentQuestion();
     const current = getCurrentQuestion();
-    renderExamList();
+    renderExamTabs();
     renderFilters();
     updateStats();
     if (!current) return;
@@ -548,7 +568,6 @@
     updateProgressBar();
   }
 
-  bindSidebarToggle();
   bindEvents();
   ensureCurrentQuestion();
   render();
