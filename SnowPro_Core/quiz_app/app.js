@@ -202,6 +202,19 @@
     return [...actual].sort().join(",") === [...expected].sort().join(",");
   }
 
+  /* ── 解説HTMLの整形 ──────────────────────────────────── */
+  function cleanExplanationHtml(html) {
+    let out = html;
+    // 末尾などに残った区切り線ゴミ <p>---</p> を除去
+    out = out.replace(/<p>-{3,}<\/p>/g, "");
+    // 裸のドキュメントURLだけの段落をリンクに変換
+    out = out.replace(
+      /<p>(https?:\/\/[^<\s]+)<\/p>/g,
+      '<p><strong>公式ドキュメント:</strong> <a href="$1" target="_blank" rel="noreferrer">$1</a></p>'
+    );
+    return out;
+  }
+
   /* ── stats ───────────────────────────────────────────── */
   function updateStats() {
     const items = Object.entries(state.progress).filter(([id]) => id.startsWith(`${state.selectedExam}::`));
@@ -358,7 +371,7 @@
 
     els.selectedAnswerText.textContent = progress.selected.length ? progress.selected.join(", ") : "未選択";
     els.correctAnswerText.textContent  = question.correctAnswers.join(", ");
-    els.explanationContent.innerHTML   = question.explanationHtml;
+    els.explanationContent.innerHTML   = cleanExplanationHtml(question.explanationHtml);
 
     if (question.practiceHtml) {
       els.practiceWrap.hidden = false;

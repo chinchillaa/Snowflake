@@ -902,6 +902,29 @@ kbd {
 
 .prose hr { border: none; border-top: 1px dashed var(--line-strong); margin: 1.2em 0; }
 
+/* 学習補足ブロック（study-supplement）を「学習の手引き」カードとして表示 */
+.prose .study-supplement {
+  margin-top: 1.4em;
+  padding: 1em 1.2em;
+  background: var(--sheet-dim);
+  border: 1px dashed var(--line-strong);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 5px 5px 0;
+  font-size: 0.88rem;
+}
+.prose .study-supplement::before {
+  content: "学習の手引き";
+  display: block;
+  font-family: var(--serif);
+  font-weight: 900;
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  color: var(--gold);
+  margin-bottom: 0.5em;
+}
+.prose .study-supplement p { margin-bottom: 0.5em; }
+.prose .study-supplement strong { color: var(--ink-2); }
+
 /* ============================================================
    フォーカス可視化
    ============================================================ */
