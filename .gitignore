@@ -1,0 +1,18 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+
+# dbt の生成物と依存パッケージ
+**/target/
+**/logs/
+**/dbt_packages/
+
+# ローカルサービスの永続データ
+**/postgres/
+
+# ローカル設定・OS・エディタの一時ファイル
+.env
+.env.*
+.DS_Store
+*.bak
