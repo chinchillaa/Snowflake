@@ -1,6 +1,6 @@
 # SnowPro Associate 検証SQL
 
-SnowPro Associate（SOL-C01）の学習まとめ（`ChinchillaVault/01_資格/certifications/snowpro-associate/まとめ/`）の各見出しに対応した、Snowflake UIで実際に実行して確認できる検証SQLファイル集です。
+SnowPro Associate（SOL-C01）の学習まとめ（`ChinchillaVault/01_資格/certifications/snowpro-associate/notes/exam-summary/`）の各見出しに対応した、Snowflake UIで実際に実行して確認できる検証SQLファイル集です。
 
 ## ディレクトリ構成
 

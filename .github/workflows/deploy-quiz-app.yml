@@ -4,8 +4,8 @@ on:
   push:
     branches: ["main"]
     paths:
-      - "certifications/snowpro-core/quiz_app/**"
-      - "certifications/snowpro-associate/quiz_app/**"
+      - "certifications/snowpro-core/quiz-app/**"
+      - "certifications/snowpro-associate/quiz-app/**"
       - "apps/learning-hub/**"
       - ".github/pages/**"
       - ".github/workflows/deploy-quiz-app.yml"
@@ -36,11 +36,11 @@ jobs:
           mkdir -p _site/SnowPro_Core _site/SnowPro_Associate
           cp .github/pages/index.html _site/index.html
           cp -r apps/learning-hub _site/apps/learning-hub
-          cp -r certifications/snowpro-core/quiz_app _site/certifications/snowpro-core/quiz_app
-          cp -r certifications/snowpro-associate/quiz_app _site/certifications/snowpro-associate/quiz_app
+          cp -r certifications/snowpro-core/quiz-app _site/certifications/snowpro-core/quiz-app
+          cp -r certifications/snowpro-associate/quiz-app _site/certifications/snowpro-associate/quiz-app
           cp -r apps/learning-hub _site/app
-          cp -r certifications/snowpro-core/quiz_app _site/SnowPro_Core/quiz_app
-          cp -r certifications/snowpro-associate/quiz_app _site/SnowPro_Associate/quiz_app
+          cp -r certifications/snowpro-core/quiz-app _site/SnowPro_Core/quiz_app
+          cp -r certifications/snowpro-associate/quiz-app _site/SnowPro_Associate/quiz_app
           find _site -name "*.bak" -delete
 
       - name: Setup Pages
